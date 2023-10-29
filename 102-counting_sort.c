@@ -1,52 +1,72 @@
 #include "sort.h"
+/**
+*integer_count- number of times integer appears in an array
+*
+*@array: array given
+*@size: size of array
+*@range: number to check for occurance
+*
+*Return: number of occurances
+*/
+int integer_count(int *array, size_t size, int range)
+{
+	int total = 0;
+	size_t i;
+
+	for (i = 0; i < size; i++)
+	{
+		if (array[i] == range)
+			total++;
+	}
+	return (total);
+}
 
 /**
- * counting_sort - sorts an array of ints ascending
- * @array: array given to be sorted
- * @size: size of given array
- * Return: Nothing
- */
-
+*counting_sort - counting sort algorithm
+*
+*@array: array to be sorted
+*@size: size of the array
+*/
 void counting_sort(int *array, size_t size)
-{	size_t i = 0, temp = 0, count = 0;
-	int *cnt_arr = NULL, *output = NULL, max = 0, j = 0;
+{
+	int k = 0, b = 0, r = 0;
+	size_t i, c;
+	int *array2, *newArray;
 
-	output = malloc(sizeof(int) * size);
-	if (array == NULL || output == NULL)
+	if (!array || size < 2)
 		return;
-	max = array[0];
 	for (i = 0; i < size; i++)
-		if (array[i] > max)
-			max = array[i];
-	cnt_arr = malloc(sizeof(int) * (max + 1));
-	if (cnt_arr == NULL)
 	{
-		free(output);
+		if (array[i] > k)
+		{
+			k = array[i];
+		}
+	}
+	array2 = malloc(sizeof(int) * (k + 1));
+	if (!array2)
+		return;
+	for (c = 0; c < ((size_t)k + 1); c++)
+	{
+		if (c == 0)
+			array2[c] = integer_count(array, size, r);
+		else
+		{
+			b = array2[c - 1] + integer_count(array, size, r);
+			array2[c] = b;
+		}
+		r++;
+	}
+	print_array(array2, (k + 1));
+	newArray = malloc(sizeof(int) * size);
+	if (!newArray)
+	{
+		free(array2);
 		return;
 	}
-	for (j = 0; j <= max; j++)
-/* all zeroes set in array */
-		cnt_arr[j] = 0;
 	for (i = 0; i < size; i++)
-/* store count each element in index */
-		cnt_arr[array[i]]++;
-	for (j = 0; j < max + 1; j++)
-/* storing count */
-	{
-		temp = cnt_arr[j];
-		cnt_arr[j] += count;
-		count += temp;
-	}
-	print_array(cnt_arr, max + 1);
-	for (i = size - 1; i < size; i--)
-/* find indexes in count_arr, set in output array */
-	{
-		output[cnt_arr[array[i]] - 1] = array[i];
-		cnt_arr[array[i]]--;
-	}
+		newArray[array2[array[i]]-- - 1] = array[i];
 	for (i = 0; i < size; i++)
-/* copy back to array */
-		array[i] = output[i];
-	free(cnt_arr);
-	free(output);
+		array[i] = newArray[i];
+	free(newArray);
+	free(array2);
 }
