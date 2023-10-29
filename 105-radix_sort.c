@@ -1,99 +1,78 @@
 #include "sort.h"
 
 /**
- * radix_sort - sorts an array of integers using LSD radix sort
- * array is sorted in ascending order
- * @array: given array to sort
- * @size: size of array to sort
+ * get_digit - gets a digit from a number
+ * @number: the integer
+ * @digit: the digit position to get
  *
- */
-
-void radix_sort(int *array, size_t size)
+ * Return: the digit value at given position
+**/
+int get_digit(long number, int digit)
 {
-	unsigned int i = 0, j = 0, k = 0;
-	int *holder;
-	int digit_count = 0, current_digit = 0, n = 0, m = 0, divider = 0;
+	long i = 0L, pow = 1L, ret;
 
-	holder = malloc(sizeof(int) * size);
-	if (holder == NULL)
-		return;
-	digit_count = digit_counting(array, size);
-	while (current_digit < digit_count)
-	{
-		for (i = 0; i < size; i++)
-		{
-			divider = divider_set(current_digit);
-			n = (array[i] / divider) % 10;
-			if (i == 0)
-				holder[i] = array[i];
-			else
-			{
-				for (j = 0; j < i; j++)
-				{
-					m = (holder[j] / divider) % 10;
-					if (m > n)
-					{
-						break;
-					}
-				}
-				if (j != i)
-				{
-					for (k = i; k > j; k--)
-						holder[k] = holder[k - 1];
-				}
-				holder[j] = array[i];
-			}
-		}
-		for (j = 0; j < size; j++)
-			array[j] = holder[j];
-		current_digit++;
-		print_array(array, size);
-	}
-	free(holder);
+	for (i = 0; i < digit; i++)
+		pow *= 10L;
+	ret = ((number / pow) % 10);
+	return (ret);
 }
 
 /**
- * digit_counting - counts how many digits are in ints
- * @array: input array of ints to count digits of
- * @size: size of input array
+ * radix_pass - sorts by radix
+ * @array: the integer array to sort
+ * @size: the size of the array
+ * @digit: the current digit to check
+ * @new_array: target array of same size
  *
- * Return: largest digit count of all ints in array
+ * Return: void.
  */
-
-int digit_counting(int *array, size_t size)
+int radix_pass(int *array, ssize_t size, int digit, int *new_array)
 {
-	unsigned int i = 0;
-	int current_count = 0, max_count = 0, n = 0;
+	ssize_t i;
+	int buckets[10] = {0};
 
 	for (i = 0; i < size; i++)
-	{
-		n = array[i];
-		current_count = 1;
-		while (n / 10 != 0)
-		{
-			current_count++;
-			n /= 10;
-		}
-		if (current_count > max_count)
-		{
-			max_count = current_count;
-		}
-	}
-	return (max_count);
+		buckets[get_digit(array[i], digit)]++;
+	for (i = 1; i <= 9; i++)
+		buckets[i] += buckets[i - 1];
+	for (i = size - 1; i > -1; i--)
+		new_array[buckets[get_digit(array[i], digit)]-- - 1] = array[i];
+	return (1);
 }
 
 /**
- * divider_set - uses cuurent_digit information to determine divider
- * @current_digit: current_digit
+ * radix_sort - sorts by radix
+ * @size: the size of the array
+ * @array: the integer array to sort
  *
- * Return: divider to access corresponding digit
+ * Return: the gap size
  */
-
-int divider_set(int current_digit)
+void radix_sort(int *array, size_t size)
 {
-	int i = 0, divider = 1;
+	int *old_array, *new_array, *temp_ptr, *ptr, max = 0;
+	size_t i, sd = 1;
 
-	for (i = 0; i < current_digit; i++)
-		divider *= 10;
-	return (divider);
+	if (!array || size < 2)
+		return;
+
+	for (i = 0; i < size; i++)
+		if (array[i] > max)
+			max = array[i];
+	while (max /= 10)
+		sd++;
+	old_array = array;
+	new_array = ptr = malloc(sizeof(int) * size);
+	if (!new_array)
+		return;
+	for (i = 0; i < sd; i++)
+	{
+		radix_pass(old_array, (ssize_t)size, i, new_array);
+		temp_ptr = old_array;
+		old_array = new_array;
+		new_array = temp_ptr;
+		print_array(old_array, size);
+	}
+	for (i = 0; i < size; i++)
+		array[i] = old_array[i];
+	free(ptr);
 }
